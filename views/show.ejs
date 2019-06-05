@@ -1,0 +1,74 @@
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  font-family: arial;
+  font-size: 12px;
+}
+#container {
+  padding: 20px;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+}
+h2 {
+  margin: 0;
+  text-align: center;
+}
+h2 img {
+  height: 40px;
+  padding: 5px;
+}
+#container a:hover {
+  background: rgba(0,0,0,0.1);
+}
+#container a {
+  text-decoration: none;
+  color: white;
+  padding: 5px;
+  display: block;
+}
+header {
+  font-family: arial;
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+}
+input[type=text]:focus {
+  outline: none;
+}
+input[type=text] {
+  background: rgba(0,0,0,0.9);
+  color: white;
+  border: none;
+  padding: 5px;
+}
+.flex {
+  align-items: center;
+  display: flex;
+}
+.flex-grow {
+  flex-grow: 1;
+}
+.label {
+  padding: 0 10px 0 0;
+}
+</style>
+</head>
+<body>
+<header>
+  <h2><a href='/'><img src='/wbus.png'></a></h2>
+  <div class='flex'>
+    <div class='label'>JSON Endpoint</div>
+    <input type='text' value='<%=val%>' class='flex-grow'>
+  </div>
+</header>
+<div id='container'>
+  <% items.forEach(function(item) { %>
+    <a href='<%=item.url%>'><%=item.filename%></a>
+  <% }) %>
+</div>
+</body>
+</html>

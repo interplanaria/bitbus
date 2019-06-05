@@ -1,0 +1,52 @@
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  /*
+  font-family: Menlo, monaco, courier;
+  */
+  font-family: arial;
+  font-size: 12px;
+}
+#container {
+  padding: 20px;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+}
+h2 {
+  margin: 0;
+  text-align: center;
+}
+h2 img {
+  height: 40px;
+  padding: 5px;
+}
+#container a:hover {
+  background: rgba(0,0,0,0.1);
+}
+#container a {
+  text-decoration: none;
+  color: white;
+  padding: 5px;
+  display: block;
+}
+header {
+  font-family: arial;
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+<header><h2><a href='/'><img src='/wbus.png'></a></h2></header>
+<div id='container'>
+  <% items.forEach(function(item) { %>
+    <a href='<%=item.url%>'><%=item.filename%></a>
+  <% }) %>
+</div>
+</body>
+</html>
