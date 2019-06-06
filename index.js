@@ -3,6 +3,7 @@ const Net = require('./net.js')
 const qr = require('./qr')
 const Listener = require('./listener')
 const Block = require('./block')
+const Push = require('./push')
 const {Inventory} = require('bitcore-p2p-cash')
 const deepcopy = require('deepcopy');
 const glob = require('glob')
@@ -255,5 +256,11 @@ if (process.argv.length > 2) {
     serve();
   } else if (cmd === 'whoami') {
     whoami()
+  } else if (cmd === 'push') {
+    if (process.argv.length > 3) {
+      let filename = process.argv[3]
+      Push(filename)
+    }
+  } else if (cmd === 'ls') {
   }
 }
