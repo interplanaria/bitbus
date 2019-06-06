@@ -4,7 +4,7 @@ const datapay = require('datapay')
 module.exports = function(filename) {
   let j = require(process.cwd() + '/' + filename)
   let s = JSON.stringify(j)
-  datapay.build({
+  datapay.send({
     data: [BITCOM, "push", s],
     pay: { key: process.env.privateKey }
   }, function(err, tx) {
@@ -14,11 +14,11 @@ module.exports = function(filename) {
       console.log("# Successfully published to Bitbus Network!")
       console.log("# To browse the network visit https://bitbus.network, or run:")
       console.log("")
-      console.log(" bitbus ls")
+      console.log("bitbus ls")
       console.log("") 
       console.log("# To use, run:") 
       console.log("") 
-      console.log(" bitbus pull " + tx.toString())
+      console.log("bitbus pull " + tx)
       console.log("") 
     }
   });

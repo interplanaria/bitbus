@@ -26,16 +26,7 @@ const init = function() {
   }).join("\n")
   kp += "\nPORT=3007"
   fs.writeFile(process.cwd() + "/.env", kp, function(err, res) {
-    console.log(`
-#################################################################################
-##
-## Welcome to Bitbus, a Bitcoinless Bitcoin Computing Service.
-## 
-## API Keys have been auto-generated inside .env
-## 
-## Follow the instruction at https://bitbus.network/docs 
-##
-#################################################################################\n\n`);
+    whoami(keys.address)
   })
 }
 var listeners = [];
@@ -215,6 +206,31 @@ const serve = function() {
     })
   })
 }
+const validate = function(config) {
+  let errors = [];
+  if (!config.bitbus) {
+    errors.push("requires a \"bitbus\": 1 key pair")
+  }
+  if (!config.name) {
+    errors.push("requires a \"name\" attribute")
+  }
+  if (config.q) {
+    let keys = Object.keys(config.q) 
+    if (keys.length > 0) {
+      // keys must be either 'find' or 'project'
+      keys.forEach(function(key) {
+        if (!["find", "project"].includes(key)) {
+          errors.push("\"q\" currently supports only \"find\" and \"project\"")
+        }
+      })
+    } else {
+      errors.push("\"q\" should have \"find\" attribute");
+    }
+  } else {
+    errors.push("requires a 'q' attribute")
+  }
+  return errors;
+}
 const start = function(options) {
   glob(process.cwd() + "/*.json", async function(er, files) {
     let configs = files.map(function(f) {
@@ -223,6 +239,13 @@ const start = function(options) {
       return f.bitbus
     })
     for(let i=0; i<configs.length; i++) {
+      let v = validate(configs[i])
+      if (v.length > 0) {
+        console.log(v.join("\n"))
+        process.exit();
+      }
+    }
+    for(let i=0; i<configs.length; i++) {
       await crawl(configs[i], options)
     }
     for(let i=0; i<configs.length; i++) {
@@ -230,8 +253,8 @@ const start = function(options) {
     }
   })
 }
-const whoami = function() {
-  qr(function(err, res) {
+const whoami = function(addr) {
+  qr(addr, function(err, res) {
     if (err) {
       console.log(err)
     } else {
@@ -255,7 +278,7 @@ if (process.argv.length > 2) {
   } else if (cmd === 'serve') {
     serve();
   } else if (cmd === 'whoami') {
-    whoami()
+    whoami(process.env.address)
   } else if (cmd === 'push') {
     if (process.argv.length > 3) {
       let filename = process.argv[3]
