@@ -6,7 +6,10 @@ const crawl = function(stream, path, cb) {
   str.on('close', function() {
     console.log("mempool crawl finished")
     fileStream.close()
-    cb()
+    let log = "MEMPOOL FINISHED " + Date.now() + "\n"
+    console.log(log)
+    fs.appendFileSync(path + "/log.txt", log);
+    cb();
   })
 }
 module.exports = {

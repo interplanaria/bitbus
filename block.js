@@ -18,6 +18,9 @@ const crawl = function(stream, path, cb) {
       if (current_block < data.blk.i) {
         fileStream.write("\n]")
         fileStream.close();
+        let log = "BLOCK FINISHED " + current_block + " " + Date.now() + "\n"
+        console.log(log)
+        fs.appendFileSync(path + "/log.txt", log);
         current_block = data.blk.i;
         fileStream = fs.createWriteStream(path + "/" + data.blk.i + ".json")
         console.log("block = ", current_block)
@@ -28,7 +31,7 @@ const crawl = function(stream, path, cb) {
     }
   });
   str.on('close', function() {
-    console.log("closing")
+    console.log("all finished at block " + current_block)
     fileStream.write("]")
     fileStream.close();
     cb()
