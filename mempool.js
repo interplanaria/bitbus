@@ -4,11 +4,13 @@ const crawl = function(stream, path, cb) {
   let fileStream = fs.createWriteStream(path + "/mempool.json")
   let str = stream.pipe(fileStream)
   str.on('close', function() {
-    console.log("mempool crawl finished")
-    fileStream.close()
-    let log = "MEMPOOL FINISHED " + Date.now() + "\n"
-    console.log(log)
-    fs.appendFileSync(path + "/log.txt", log);
+    if (!process.env.DEV) {
+      console.log("mempool crawl finished")
+      fileStream.close()
+      let log = "MEMPOOL " + Date.now() + "\n"
+      console.log(log)
+      fs.appendFileSync(path + "/log.txt", log);
+    }
     cb();
   })
 }

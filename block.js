@@ -9,31 +9,41 @@ const crawl = function(stream, path, cb) {
   let current_block;
   let fileStream
   str.on('data', function(data) {
-    if (!current_block) {
-      current_block = data.blk.i;
-      fileStream = fs.createWriteStream(path + "/" + data.blk.i + ".json")
-      console.log("block = ", current_block)
-      fileStream.write("[\n" + JSON.stringify(data))
+    if (process.env.DEV) {
+      console.log(data)
     } else {
-      if (current_block < data.blk.i) {
-        fileStream.write("\n]")
-        fileStream.close();
-        let log = "BLOCK FINISHED " + current_block + " " + Date.now() + "\n"
-        console.log(log)
-        fs.appendFileSync(path + "/log.txt", log);
+      if (!current_block) {
         current_block = data.blk.i;
         fileStream = fs.createWriteStream(path + "/" + data.blk.i + ".json")
         console.log("block = ", current_block)
         fileStream.write("[\n" + JSON.stringify(data))
       } else {
-        fileStream.write(",\n" + JSON.stringify(data))
+        if (current_block < data.blk.i) {
+          fileStream.write("\n]")
+          fileStream.close();
+          let log = "BLOCK " + current_block + " " + Date.now() + "\n"
+          console.log(log)
+          fs.appendFileSync(path + "/log.txt", log);
+          current_block = data.blk.i;
+          fileStream = fs.createWriteStream(path + "/" + data.blk.i + ".json")
+          console.log("block = ", current_block)
+          fileStream.write("[\n" + JSON.stringify(data))
+        } else {
+          fileStream.write(",\n" + JSON.stringify(data))
+        }
       }
     }
   });
+  str.on('error', function(e) {
+    console.log("Error", e)
+    process.exit();
+  })
   str.on('close', function() {
-    console.log("all finished at block " + current_block)
-    fileStream.write("]")
-    fileStream.close();
+    if (!process.env.DEV) {
+      console.log("all finished at block " + current_block)
+      fileStream.write("]")
+      fileStream.close();
+    }
     cb()
   })
 }

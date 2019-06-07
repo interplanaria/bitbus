@@ -103,14 +103,15 @@ const crawl = function(o, payload) {
     let str = JSON.stringify(o)
     let hash = crypto.createHash('sha256').update(str).digest('hex');
     let busdir = process.cwd() + "/bus"
-    fs.mkdir(busdir, { recursive: true }, (err) => {
-      let dir = busdir + "/" + hash
-      Net.block(last, dir, function() {
-        console.log("block finished")
-        Net.mempool(o, dir, function() {
-          console.log("[Start NET] finished crawling mempool", JSON.stringify(o))
-          resolve()
-        })
+    if (!process.env.DEV) {
+      fs.mkdirSync(busdir, { recursive: true })
+    }
+    let dir = busdir + "/" + hash
+    Net.block(last, dir, function() {
+      console.log("block finished")
+      Net.mempool(o, dir, function() {
+        console.log("[Start NET] finished crawling mempool", JSON.stringify(o))
+        resolve()
       })
     })
   })
@@ -286,4 +287,8 @@ if (process.argv.length > 2) {
     }
   } else if (cmd === 'ls') {
   }
+}
+module.exports = {
+  crawl: crawl,
+  start: start
 }

@@ -16,34 +16,36 @@ const peek = function(o) {
   })
 }
 const block = function(o, path, cb) {
-  fs.mkdir(path, { recursive: true }, (err) => {
-    Key.gen(o).then(function(t) {
-      axios({
-        method: "post",
-        url: host + "/block",
-        data: { tx: t },
-        responseType: "stream"
-      }).then(function(res) {
-        Block.crawl(res.data, path, cb)
-      }).catch(function(err) {
-        console.log("Err = ", err)
-      })
+  if (!process.env.DEV) fs.mkdirSync(path, { recursive: true })
+  Key.gen(o).then(function(t) {
+    axios({
+      method: "post",
+      url: host + "/block",
+      headers: {
+        'Content-type': 'application/json; charset=utf-8',
+        'Accept': 'application/json; charset=utf-8'
+      },
+      data: { tx: t },
+      responseType: "stream"
+    }).then(function(res) {
+      Block.crawl(res.data, path, cb)
+    }).catch(function(err) {
+      console.log("Err = ", err)
     })
   })
 }
 const mempool = function(o, path, cb) {
-  fs.mkdir(path, { recursive: true }, (err) => {
-    Key.gen(o).then(function(t) {
-      axios({
-        method: "post",
-        url: host + "/mempool",
-        data: { tx: t },
-        responseType: "stream"
-      }).then(function(res) {
-        Mempool.crawl(res.data, path, cb)
-      }).catch(function(err) {
-        console.log("Err = ", err)
-      })
+  if (!process.env.DEV) fs.mkdirSync(path, { recursive: true })
+  Key.gen(o).then(function(t) {
+    axios({
+      method: "post",
+      url: host + "/mempool",
+      data: { tx: t },
+      responseType: "stream"
+    }).then(function(res) {
+      Mempool.crawl(res.data, path, cb)
+    }).catch(function(err) {
+      console.log("Err = ", err)
     })
   })
 }
