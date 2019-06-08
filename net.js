@@ -16,7 +16,7 @@ const peek = function(o) {
   })
 }
 const block = function(o, path, cb) {
-  if (!process.env.DEV) fs.mkdirSync(path, { recursive: true })
+  if (!process.env.DEV && !fs.existsSync(path)) fs.mkdirSync(path, { recursive: true })
   Key.gen(o).then(function(t) {
     axios({
       method: "post",
@@ -34,8 +34,8 @@ const block = function(o, path, cb) {
     })
   })
 }
-const mempool = function(o, path, cb) {
-  if (!process.env.DEV) fs.mkdirSync(path, { recursive: true })
+const mempool = function(o, path, hashpool, cb) {
+  if (!process.env.DEV && !fs.existsSync(path)) fs.mkdirSync(path, { recursive: true })
   Key.gen(o).then(function(t) {
     axios({
       method: "post",
@@ -43,7 +43,7 @@ const mempool = function(o, path, cb) {
       data: { tx: t },
       responseType: "stream"
     }).then(function(res) {
-      Mempool.crawl(res.data, path, cb)
+      Mempool.crawl(res.data, path, hashpool, cb)
     }).catch(function(err) {
       console.log("Err = ", err)
     })

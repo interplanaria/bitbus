@@ -1,15 +1,26 @@
 const fs = require('fs')
 const es = require('event-stream')
-const crawl = function(stream, path, cb) {
+const crawl = function(stream, path, hashpool, cb) {
   let fileStream = fs.createWriteStream(path + "/mempool.json")
   let str = stream.pipe(fileStream)
   str.on('close', function() {
     if (!process.env.DEV) {
       console.log("mempool crawl finished")
       fileStream.close()
-      let log = "MEMPOOL " + Date.now() + "\n"
-      console.log(log)
-      fs.appendFileSync(path + "/log.txt", log);
+      if (hashpool && hashpool.length > 0) {
+        // check if the hashes are in the new mempool.json
+        fs.readFile(path + "/mempool.json", function(err, content) {
+          console.log("hashpool = ", hashpool)
+          let filtered = hashpool.filter(function(h) {
+            return content.includes(h)
+          })
+          console.log("filtered hashpool= ", filtered)
+          filtered.forEach(function(h) {
+            let log = "MEMPOOL " + h + " " +  Date.now() + "\n"
+            fs.appendFileSync(path + "/log.txt", log);
+          })
+        })
+      }
     }
     cb();
   })

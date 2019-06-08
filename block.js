@@ -1,6 +1,11 @@
 const fs = require('fs')
 const es = require('event-stream')
 const crypto = require('crypto')
+const log = function(current_block, path) {
+  let l = "BLOCK " + current_block + " " + Date.now() + "\n"
+  console.log(l)
+  fs.appendFileSync(path + "/log.txt", l);
+}
 const crawl = function(stream, path, cb) {
   let str = stream
     .pipe(es.split())
@@ -21,9 +26,7 @@ const crawl = function(stream, path, cb) {
         if (current_block < data.blk.i) {
           fileStream.write("\n]")
           fileStream.close();
-          let log = "BLOCK " + current_block + " " + Date.now() + "\n"
-          console.log(log)
-          fs.appendFileSync(path + "/log.txt", log);
+          log(current_block, path);
           current_block = data.blk.i;
           fileStream = fs.createWriteStream(path + "/" + data.blk.i + ".json")
           console.log("block = ", current_block)
@@ -43,6 +46,7 @@ const crawl = function(stream, path, cb) {
       console.log("all finished at block " + current_block)
       fileStream.write("]")
       fileStream.close();
+      log(current_block, path);
     }
     cb()
   })

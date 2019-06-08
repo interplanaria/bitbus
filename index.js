@@ -56,20 +56,23 @@ const seek = function(x, cb) {
     })
   })
 }
-const mem = function(o, dir, hash) {
-  Net.mempool(o, dir, function() {
+var pool = [];
+const mem = function(o, dir) {
+  Net.mempool(o, dir, pool, function() {
     console.log("[MEM NET] finished crawling mempool", JSON.stringify(o))
   })
+  pool = [];
 }
 const listen = function(o) {
   let str = JSON.stringify(o)
-  let hash = crypto.createHash('sha256').update(str).digest('hex');
-  let dir = process.cwd() + "/bus/" + hash
-  const debouncedMem = debounce(mem, 10000);
+  let h = crypto.createHash('sha256').update(str).digest('hex');
+  let dir = process.cwd() + "/bus/" + h
+  const debouncedMem = debounce(mem, 1000);
   let listener = Listener.start({
     onmempool: async function(hash) {
       console.log("onmempool", hash, Date.now())
-      debouncedMem(o, dir, hash)
+      pool.push(hash);
+      debouncedMem(o, dir)
     },
     onblock: async function(hash) {
       console.log("onblock", hash, Date.now())
@@ -77,7 +80,7 @@ const listen = function(o) {
       Net.block(last, dir, function() {
         console.log("[Listen NET] finished crawling block", JSON.stringify(last))
       })
-      Net.mempool(o, dir, function() {
+      Net.mempool(o, dir, null, function() {
         console.log("[Listen NET] finished crawling mempool", JSON.stringify(o))
       })
     }
@@ -109,7 +112,7 @@ const crawl = function(o, payload) {
     let dir = busdir + "/" + hash
     Net.block(last, dir, function() {
       console.log("block finished")
-      Net.mempool(o, dir, function() {
+      Net.mempool(o, dir, null, function() {
         console.log("[Start NET] finished crawling mempool", JSON.stringify(o))
         resolve()
       })
