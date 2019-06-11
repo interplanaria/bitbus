@@ -114,7 +114,7 @@ const crawl = function(o, payload) {
       console.log("block finished")
       Net.mempool(o, dir, null, function() {
         console.log("[Start NET] finished crawling mempool", JSON.stringify(o))
-        resolve()
+        resolve(dir)
       })
     })
   })
@@ -235,7 +235,7 @@ const validate = function(config) {
   }
   return errors;
 }
-const start = function(options) {
+const start = function(options, cb) {
   glob(process.cwd() + "/*.json", async function(er, files) {
     let configs = files.map(function(f) {
       return require(f)
@@ -255,7 +255,18 @@ const start = function(options) {
     for(let i=0; i<configs.length; i++) {
       listen(configs[i])
     }
+    if (cb) cb();
   })
+}
+const build = async function(payload, cb) {
+  let v = validate(payload)
+  if (v.length > 0) {
+    console.log(v.join("\n"))
+    process.exit();
+  }
+  let busdir = await crawl(payload)
+  listen(payload)
+  if (cb) cb(busdir);
 }
 const whoami = function(addr) {
   qr(addr, function(err, res) {
@@ -293,5 +304,6 @@ if (process.argv.length > 2) {
 }
 module.exports = {
   crawl: crawl,
-  start: start
+  start: start,
+  build: build
 }
