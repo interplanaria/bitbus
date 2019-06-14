@@ -12,7 +12,7 @@ const peek = function(o) {
     url: host + "/peek",
     data: { q: o.q },
   }).then(function(res) {
-    console.log(res.data)
+    console.log("BITBUS", res.data)
   })
 }
 const block = function(o, path, cb) {
@@ -30,7 +30,7 @@ const block = function(o, path, cb) {
     }).then(function(res) {
       Block.crawl(res.data, path, cb)
     }).catch(function(err) {
-      console.log("Err = ", err)
+      console.log("BITBUS", err)
     })
   })
 }
@@ -45,7 +45,7 @@ const mempool = function(o, path, hashpool, cb) {
     }).then(function(res) {
       Mempool.crawl(res.data, path, hashpool, cb)
     }).catch(function(err) {
-      console.log("Err = ", err)
+      console.log("BITBUS", err)
     })
   })
 }

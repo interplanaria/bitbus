@@ -9,13 +9,13 @@ const gen = function(o) {
         pay: { key: process.env.privateKey, to: [{ address: SERVICE, value: 0 }] }
       }, function(err, tx) {
         if (err) {
-          console.log(err)
+          console.log("BITBUS", err)
         } else {
           resolve(tx.toString())
         }
       });
     } else {
-      console.log("Please generate a Bitcoin key pair using 'bitbus new'")
+      console.log("BITBUS", "Please generate a Bitcoin key pair using 'bitbus new'")
     }
   })
 }

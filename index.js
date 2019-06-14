@@ -20,13 +20,23 @@ const createKey = function() {
   return {privateKey: privateKey.toWIF(), address: address.toString(), publicKey: pubKey.toString()}
 }
 const init = function() {
-  let keys = createKey()
-  let kp = Object.keys(keys).map(function(k) {
-    return k + "=" + keys[k]
-  }).join("\n")
-  kp += "\nPORT=3007"
-  fs.writeFile(process.cwd() + "/.env", kp, function(err, res) {
-    whoami(keys.address)
+  return new Promise(function(resolve, reject) {
+    let keys = createKey()
+    let kp = Object.keys(keys).map(function(k) {
+      return k + "=" + keys[k]
+    }).join("\n")
+    kp += "\nPORT=3007"
+    if (fs.existsSync(process.cwd() + "/.env")) {
+      console.log("BITBUS", "bitbus .env already exists. Skipping...")
+      resolve();
+    } else {
+      for(let k in keys) {
+        process.env[k] = keys[k];
+      }
+      fs.writeFile(process.cwd() + "/.env", kp, function(err, res) {
+        whoami(keys.address, resolve)
+      })
+    }
   })
 }
 var listeners = [];
@@ -59,7 +69,7 @@ const seek = function(x, cb) {
 var pool = [];
 const mem = function(o, dir) {
   Net.mempool(o, dir, pool, function() {
-    console.log("[MEM NET] finished crawling mempool", JSON.stringify(o))
+    console.log("BITBUS", "finished crawling mempool", JSON.stringify(o))
   })
   pool = [];
 }
@@ -70,18 +80,18 @@ const listen = function(o) {
   const debouncedMem = debounce(mem, 1000);
   let listener = Listener.start({
     onmempool: async function(hash) {
-      console.log("onmempool", hash, Date.now())
+      console.log("BITBUS", "onmempool", hash, Date.now())
       pool.push(hash);
       debouncedMem(o, dir)
     },
     onblock: async function(hash) {
-      console.log("onblock", hash, Date.now())
+      console.log("BITBUS", "onblock", hash, Date.now())
       let last = await seek(o);
-      Net.block(last, dir, function() {
-        console.log("[Listen NET] finished crawling block", JSON.stringify(last))
-      })
       Net.mempool(o, dir, null, function() {
-        console.log("[Listen NET] finished crawling mempool", JSON.stringify(o))
+        console.log("BITBUS", "listen - finished processing mempool", JSON.stringify(o))
+        Net.block(last, dir, function() {
+          console.log("BITBUS", "listen - finished processing block", JSON.stringify(last))
+        })
       })
     }
   })
@@ -111,9 +121,9 @@ const crawl = function(o, payload) {
     }
     let dir = busdir + "/" + hash
     Net.block(last, dir, function() {
-      console.log("block finished")
+      console.log("BITBUS", "crawl - finished processing block")
       Net.mempool(o, dir, null, function() {
-        console.log("[Start NET] finished crawling mempool", JSON.stringify(o))
+        console.log("BITBUS", "crawl - finished processing mempool", JSON.stringify(o))
         resolve(dir)
       })
     })
@@ -140,7 +150,7 @@ const serve = function() {
       let hash = crypto.createHash('sha256').update(str).digest('hex');
       hashes.push(hash)
     })
-    console.log("created " + process.cwd() +"/bus")
+    console.log("BITBUS", "created " + process.cwd() +"/bus")
     app.get('/', (req, res) => {
       fs.readdir(process.cwd() + "/bus", function(err, items) {
         let url = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -210,12 +220,12 @@ const serve = function() {
     })
   })
 }
-const validate = function(config) {
+const validate = function(config, vmode) {
   let errors = [];
-  if (!config.bitbus) {
+  if (!config.bitbus && vmode !== "build") {
     errors.push("requires a \"bitbus\": 1 key pair")
   }
-  if (!config.name) {
+  if (!config.name && vmode !== "build") {
     errors.push("requires a \"name\" attribute")
   }
   if (config.q) {
@@ -242,6 +252,9 @@ const start = function(options, cb) {
     }).filter(function(f) {
       return f.bitbus
     })
+    if (configs.length === 0) {
+      console.log("BITBUS", "Couldn't find a JSON file with an attribute 'bitbus'")
+    }
     for(let i=0; i<configs.length; i++) {
       let v = validate(configs[i])
       if (v.length > 0) {
@@ -258,23 +271,24 @@ const start = function(options, cb) {
     if (cb) cb();
   })
 }
-const build = async function(payload, cb) {
-  let v = validate(payload)
+const build = async function(payload) {
+  let v = validate(payload, "build")
   if (v.length > 0) {
     console.log(v.join("\n"))
     process.exit();
   }
   let busdir = await crawl(payload)
   listen(payload)
-  if (cb) cb(busdir);
+  return busdir;
 }
-const whoami = function(addr) {
+const whoami = function(addr, cb) {
   qr(addr, function(err, res) {
     if (err) {
       console.log(err)
     } else {
       console.log(res)
     }
+    if (cb) cb();
   })
 }
 if (process.argv.length > 2) {
@@ -303,6 +317,7 @@ if (process.argv.length > 2) {
   }
 }
 module.exports = {
+  init: init,
   crawl: crawl,
   start: start,
   build: build

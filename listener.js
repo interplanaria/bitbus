@@ -6,16 +6,16 @@ const start = function(handler) {
   let m = new Messages({ Block: bsv.Block, BlockHeader: bsv.BlockHeader, Transaction: bsv.Transaction, MerkleBlock: bsv.MerkleBlock })
   let peer = new Peer({host: seed, messages: m})
   peer.on("disconnect", function() {
-    console.log("disconnected")
+    console.log("BITBUS", "peer disconnected")
   })
   peer.on("error", function(e) {
-    console.log("Err", e)
+    console.log("BITBUS", "peer error", e)
   })
   peer.on("notfound", function(e) {
-    console.log("notfound", e)
+    console.log("BITBUS", "peer notfound", e)
   })
   peer.on("reject", function(e) {
-    console.log("reject", e)
+    console.log("BITBUS", "peer reject", e)
   })
   peer.on('inv', function(message) {
     let items = message.inventory.map(function(i) {

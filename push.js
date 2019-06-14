@@ -9,7 +9,7 @@ module.exports = function(filename) {
     pay: { key: process.env.privateKey }
   }, function(err, tx) {
     if (err) {
-      console.log(err)
+      console.log("BITBUS", err)
     } else {
       console.log("# Successfully published to Bitbus Network!")
       console.log("# To browse the network visit https://bitbus.network, or run:")

@@ -3,8 +3,7 @@ const es = require('event-stream')
 const crypto = require('crypto')
 const log = function(current_block, path) {
   let l = "BLOCK " + current_block + " " + Date.now() + "\n"
-  console.log(l)
-  fs.appendFileSync(path + "/log.txt", l);
+  fs.appendFileSync(path + "/tape.txt", l);
 }
 const crawl = function(stream, path, cb) {
   let str = stream
@@ -15,12 +14,12 @@ const crawl = function(stream, path, cb) {
   let fileStream
   str.on('data', function(data) {
     if (process.env.DEV) {
-      console.log(data)
+      console.log("BITBUS", data)
     } else {
       if (!current_block) {
         current_block = data.blk.i;
         fileStream = fs.createWriteStream(path + "/" + data.blk.i + ".json")
-        console.log("block = ", current_block)
+        console.log("BITBUS", "start writing block", current_block)
         fileStream.write("[\n" + JSON.stringify(data))
       } else {
         if (current_block < data.blk.i) {
@@ -29,7 +28,7 @@ const crawl = function(stream, path, cb) {
           log(current_block, path);
           current_block = data.blk.i;
           fileStream = fs.createWriteStream(path + "/" + data.blk.i + ".json")
-          console.log("block = ", current_block)
+          console.log("BITBUS", "start writing block", current_block)
           fileStream.write("[\n" + JSON.stringify(data))
         } else {
           fileStream.write(",\n" + JSON.stringify(data))
@@ -38,12 +37,12 @@ const crawl = function(stream, path, cb) {
     }
   });
   str.on('error', function(e) {
-    console.log("Error", e)
+    console.log("BITBUS", e)
     process.exit();
   })
   str.on('close', function() {
     if (!process.env.DEV) {
-      console.log("all finished at block " + current_block)
+      console.log("BITBUS", "all finished at block " + current_block)
       fileStream.write("]")
       fileStream.close();
       log(current_block, path);
@@ -55,16 +54,16 @@ const save = function(stream, cb) {
   let filestream = fs.createWriteStream(filename, {autoClose: false})
   filestream.write("{\"bus\":")
   stream.on("error", function() {
-    console.log("ERror")
+    console.log("BITBUS", "stream error")
     filestream.close();
   })
   stream.on("end", function() {
-    console.log("Finish")
+    console.log("BITBUS", "stream finish")
     filestream.write("}")
     filestream.close();
   })
   stream.on("close", function() {
-    console.log("close")
+    console.log("BITBUS", "stream close")
     filestream.close();
     o.onfinish();
   })
