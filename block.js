@@ -41,7 +41,9 @@ const crawl = function(stream, path, cb) {
     process.exit();
   })
   str.on('close', function() {
-    if (!process.env.DEV) {
+    if (current_block === undefined) {
+      console.log("BITBUS", "finished crawling - no transactions found")
+    } else if (!process.env.DEV) {
       console.log("BITBUS", "all finished at block " + current_block)
       fileStream.write("]")
       fileStream.close();
