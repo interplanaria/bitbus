@@ -75,6 +75,7 @@ const mem = function(o, dir) {
 }
 const listen = function(o) {
   let str = JSON.stringify(o)
+  console.log("BITBUS", "listen - start", str)
   let h = crypto.createHash('sha256').update(str).digest('hex');
   let dir = process.cwd() + "/bus/" + h
   const debouncedMem = debounce(mem, 1000);
@@ -98,6 +99,7 @@ const listen = function(o) {
   listeners.push(listener)
 }
 const crawl = function(o, payload) {
+  console.log("BITBUS", "crawl - start", JSON.stringify(o))
   return new Promise(async function(resolve, reject) {
     let last = deepcopy(o)
     if (payload) {
@@ -120,6 +122,7 @@ const crawl = function(o, payload) {
       fs.mkdirSync(busdir, { recursive: true })
     }
     let dir = busdir + "/" + hash
+    console.log("BITBUS", "synchronizing to folder", dir)
     Net.block(last, dir, function() {
       console.log("BITBUS", "crawl - finished processing block")
       Net.mempool(o, dir, null, function() {
@@ -148,12 +151,12 @@ const serve = function() {
     cfigs.forEach(function(cfig) {
       let str = JSON.stringify(cfig)
       let hash = crypto.createHash('sha256').update(str).digest('hex');
+      console.log("BITBUS", "serving " + str + " from " + process.cwd() + "/bus/" + hash)
       hashes.push(hash)
     })
-    console.log("BITBUS", "created " + process.cwd() +"/bus")
     app.get('/', (req, res) => {
       fs.readdir(process.cwd() + "/bus", function(err, items) {
-        let url = req.protocol + '://' + req.get('host') + req.originalUrl;
+        let url = req.originalUrl;
         res.render("home", {
           items: cfigs.map(function(c, index) {
             return {
@@ -166,10 +169,10 @@ const serve = function() {
     })
     app.get('/bus/:hash', (req, res) => {
       fs.readdir(process.cwd() + "/bus/" + req.params.hash, function(err, items) {
-        let url = req.protocol + '://' + req.get('host') + req.originalUrl;
+        let url = req.originalUrl;
         if (items) {
           res.render("show", {
-            val: req.protocol + "://" + req.get('host') + "/b/" + req.params.hash,
+            val: "/b/" + req.params.hash,
             items: items.reverse().map(function(i) {
               return {
                 filename: i,
@@ -184,7 +187,7 @@ const serve = function() {
     })
     app.get('/bus/:hash/:filename', (req, res) => {
       let filestream = fs.readFile(process.cwd() + "/bus/" + req.params.hash + "/" + req.params.filename, function(err, r) {
-        let url = req.protocol + '://' + req.get('host') + "/b/" + req.params.hash + "/" + req.params.filename;
+        let url = "/b/" + req.params.hash + "/" + req.params.filename;
         res.render("block", {
           val: url,
           content: r
@@ -200,7 +203,7 @@ const serve = function() {
     })
     app.get('/b/:hash', (req, res) => {
       fs.readdir(process.cwd() + "/bus/" + req.params.hash, function(err, items) {
-        let url = req.protocol + '://' + req.get('host') + req.originalUrl;
+        let url = req.originalUrl;
         res.json({
           items: items.map(function(i) {
             return {
@@ -251,6 +254,9 @@ const start = function(options, cb) {
       return require(f)
     }).filter(function(f) {
       return f.bitbus
+    })
+    configs.forEach(function(c) {
+      console.log("BITBUS", "Found bus file - ", JSON.stringify(c, null, 2))
     })
     if (configs.length === 0) {
       console.log("BITBUS", "Couldn't find a JSON file with an attribute 'bitbus'")
