@@ -1,6 +1,6 @@
 {
   "name": "bitbus",
-  "version": "0.0.78",
+  "version": "0.0.79",
   "description": "bitcoinless bitcoin computing",
   "main": "index.js",
   "scripts": {
