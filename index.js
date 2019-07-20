@@ -3,7 +3,7 @@ const Net = require('./net.js')
 const qr = require('./qr')
 const Listener = require('./listener')
 const Block = require('./block')
-const Push = require('./push')
+const Publish = require('./publish')
 const {Inventory} = require('bitcore-p2p-cash')
 const deepcopy = require('deepcopy');
 const glob = require('glob')
@@ -314,10 +314,13 @@ if (process.argv.length > 2) {
     serve();
   } else if (cmd === 'whoami') {
     whoami(process.env.address)
-  } else if (cmd === 'push') {
+  } else if (cmd === 'publish') {
     if (process.argv.length > 3) {
       let filename = process.argv[3]
-      Push(filename)
+      Publish(filename)
+    } else {
+      console.log("[Syntax]\n")
+      console.log("$ bitbus publish [filepath]")
     }
   } else if (cmd === 'ls') {
   }
