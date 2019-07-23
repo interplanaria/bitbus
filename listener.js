@@ -6,7 +6,14 @@ const start = function(handler) {
   let m = new Messages({ Block: bsv.Block, BlockHeader: bsv.BlockHeader, Transaction: bsv.Transaction, MerkleBlock: bsv.MerkleBlock })
   let peer = new Peer({host: seed, messages: m})
   peer.on("disconnect", function() {
-    console.log("BITBUS", "peer disconnected")
+    console.log("BITBUS", "peer disconnected. retrying in 10 seconds...")
+    setTimeout(function() {
+      console.log("BITBUS", "retry connect...")
+      peer.connect()
+    }, 10000)
+  })
+  peer.on("connect", function(e) {
+    console.log("BITBUS", "peer connected", e)
   })
   peer.on("error", function(e) {
     console.log("BITBUS", "peer error", e)
