@@ -2,6 +2,7 @@
 require('dotenv').config()
 const Net = require('./net.js')
 const qr = require('./qr')
+const Log = require('./log.js')
 const Listener = require('./listener')
 const Block = require('./block')
 const Publish = require('./publish')
@@ -28,13 +29,14 @@ const init = function(o) {
     for(let k in o) {
       keys[k] = o[k];
     }
-    let kp = Object.keys(keys).map(function(k) {
-      return k + "=" + keys[k]
-    }).join("\n")
     if (fs.existsSync(process.cwd() + "/.env")) {
-      console.log("BITBUS", "bitbus .env already exists. Skipping...")
+      Log.debug("BITBUS", "bitbus .env already exists. Skipping...")
       resolve();
     } else {
+      keys.DEBUG = true;
+      let kp = Object.keys(keys).map(function(k) {
+        return k + "=" + keys[k]
+      }).join("\n")
       for(let k in keys) {
         process.env[k] = keys[k];
       }
@@ -42,7 +44,7 @@ const init = function(o) {
         let busdir = path.resolve(buspath(), "bus")
         if (!process.env.DEV && !fs.existsSync(busdir)) {
           fs.mkdirSync(busdir, { recursive: true })
-          console.log("BITBUS", "successfully created a bus storage at " + busdir)
+          Log.debug("BITBUS", "successfully created a bus storage at " + busdir)
         }
         whoami(keys.address, resolve)
       })
@@ -83,7 +85,7 @@ var pool = [];
 const mem = function(o, dir) {
   let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
   Net.mempool(hb, o, dir, pool, function() {
-    console.log("BITBUS", "finished crawling mempool", JSON.stringify(o))
+    Log.debug("BITBUS", "finished crawling mempool", JSON.stringify(o))
   })
   pool = [];
 }
@@ -91,24 +93,24 @@ const listen = function(o) {
   let str = JSON.stringify(o)
   let hc = ((o.host && o.host.bitcoin) ? o.host.bitcoin : host.bitcoin);
   let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
-  console.log("BITBUS", "listen - start", str)
+  Log.debug("BITBUS", "listen - start", str)
   let h = crypto.createHash('sha256').update(str).digest('hex');
   let dir = path.resolve(buspath(), "bus/" + h)
   const debouncedMem = debounce(mem, 1000);
   let listener = Listener.start({
     host: hc,
     onmempool: async function(hash) {
-      console.log("BITBUS", "onmempool", hash, Date.now())
+      Log.debug("BITBUS", "onmempool", hash, Date.now())
       pool.push(hash);
       debouncedMem(o, dir)
     },
     onblock: async function(hash) {
-      console.log("BITBUS", "onblock", hash, Date.now())
+      Log.debug("BITBUS", "onblock", hash, Date.now())
       let last = await seek(o);
       Net.mempool(hb, o, dir, null, function() {
-        console.log("BITBUS", "listen - finished processing mempool", JSON.stringify(o))
+        Log.debug("BITBUS", "listen - finished processing mempool", JSON.stringify(o))
         Net.block(hb, last, dir, function() {
-          console.log("BITBUS", "listen - finished processing block", JSON.stringify(last))
+          Log.debug("BITBUS", "listen - finished processing block", JSON.stringify(last))
         })
       })
     }
@@ -116,7 +118,7 @@ const listen = function(o) {
   listeners.push(listener)
 }
 const crawl = function(o, payload) {
-  console.log("BITBUS", "crawl - start", JSON.stringify(o))
+  Log.debug("BITBUS", "crawl - start", JSON.stringify(o))
   return new Promise(async function(resolve, reject) {
     let last = deepcopy(o)
     if (payload) {
@@ -137,12 +139,12 @@ const crawl = function(o, payload) {
     let busdir = path.resolve(buspath(), "bus")
     if (!process.env.DEV && !fs.existsSync(busdir)) fs.mkdirSync(busdir, { recursive: true })
     let dir = busdir + "/" + hash
-    console.log("BITBUS", "synchronizing to folder", dir)
+    Log.debug("BITBUS", "synchronizing to folder", dir)
     let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
     Net.block(hb, last, dir, function() {
-      console.log("BITBUS", "crawl - finished processing block")
+      Log.debug("BITBUS", "crawl - finished processing block")
       Net.mempool(hb, o, dir, null, function() {
-        console.log("BITBUS", "crawl - finished processing mempool", JSON.stringify(o))
+        Log.debug("BITBUS", "crawl - finished processing mempool", JSON.stringify(o))
         resolve(dir)
       })
     })
@@ -187,15 +189,15 @@ const start = function(options, cb) {
       return f.bitbus
     })
     configs.forEach(function(c) {
-      console.log("BITBUS", "Found bus file - ", JSON.stringify(c, null, 2))
+      Log.debug("BITBUS", "Found bus file - ", JSON.stringify(c, null, 2))
     })
     if (configs.length === 0) {
-      console.log("BITBUS", "Couldn't find a JSON file with an attribute 'bitbus'")
+      Log.debug("BITBUS", "Couldn't find a JSON file with an attribute 'bitbus'")
     }
     for(let i=0; i<configs.length; i++) {
       let v = validate(configs[i])
       if (v.length > 0) {
-        console.log(v.join("\n"))
+        Log.debug(v.join("\n"))
         process.exit();
       }
     }
@@ -211,7 +213,7 @@ const start = function(options, cb) {
 const build = async function(payload) {
   let v = validate(payload, "build")
   if (v.length > 0) {
-    console.log(v.join("\n"))
+    Log.debug(v.join("\n"))
     process.exit();
   }
   let busdir = await crawl(payload)
@@ -221,9 +223,9 @@ const build = async function(payload) {
 const whoami = function(addr, cb) {
   qr(addr, function(err, res) {
     if (err) {
-      console.log(err)
+      Log.debug(err)
     } else {
-      console.log(res)
+      Log.debug(res)
     }
     if (cb) cb();
   })
@@ -256,8 +258,8 @@ if (process.argv.length > 2) {
       let filename = process.argv[3]
       Publish(filename)
     } else {
-      console.log("[Syntax]\n")
-      console.log("$ bitbus publish [filepath]")
+      Log.debug("[Syntax]\n")
+      Log.debug("$ bitbus publish [filepath]")
     }
   } else if (cmd === 'ls') {
   }

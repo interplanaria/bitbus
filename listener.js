@@ -1,3 +1,4 @@
+const Log = require("./log.js")
 const bsv = require('bsv')
 const config = require('./bitbus.json')
 const {Peer, Messages, Inventory} = require('bitcore-p2p-cash')
@@ -5,23 +6,23 @@ const start = function(handler) {
   let m = new Messages({ Block: bsv.Block, BlockHeader: bsv.BlockHeader, Transaction: bsv.Transaction, MerkleBlock: bsv.MerkleBlock })
   let peer = new Peer({host: handler.host, messages: m})
   peer.on("disconnect", function() {
-    console.log("BITBUS", "peer disconnected. retrying in 10 seconds...")
+    Log.debug("BITBUS", "peer disconnected. retrying in 10 seconds...")
     setTimeout(function() {
-      console.log("BITBUS", "retry connect...")
+      Log.debug("BITBUS", "retry connect...")
       peer.connect()
     }, 10000)
   })
   peer.on("connect", function(e) {
-    console.log("BITBUS", "peer connected", e)
+    Log.debug("BITBUS", "peer connected", e)
   })
   peer.on("error", function(e) {
-    console.log("BITBUS", "peer error", e)
+    Log.debug("BITBUS", "peer error", e)
   })
   peer.on("notfound", function(e) {
-    console.log("BITBUS", "peer notfound", e)
+    Log.debug("BITBUS", "peer notfound", e)
   })
   peer.on("reject", function(e) {
-    console.log("BITBUS", "peer reject", e)
+    Log.debug("BITBUS", "peer reject", e)
   })
   peer.on('inv', function(message) {
     let items = message.inventory.map(function(i) {

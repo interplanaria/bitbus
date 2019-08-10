@@ -1,6 +1,7 @@
 const Block = require('./block.js')
 const Mempool = require('./mempool.js')
 const Key = require('./key.js')
+const Log = require('./log.js')
 const axios = require('axios')
 const fs = require('fs')
 const crypto = require('crypto')
@@ -10,7 +11,7 @@ const peek = function(host, o) {
     url: host + "/peek",
     data: { q: o.q },
   }).then(function(res) {
-    console.log("BITBUS", res.data)
+    Log.debug("BITBUS", res.data)
   })
 }
 const block = function(host, o, path, cb) {
@@ -28,7 +29,7 @@ const block = function(host, o, path, cb) {
     }).then(function(res) {
       Block.crawl(res.data, path, cb)
     }).catch(function(err) {
-      console.log("BITBUS", err)
+      Log.debug("BITBUS", err)
     })
   })
 }
@@ -43,7 +44,7 @@ const mempool = function(host, o, path, hashpool, cb) {
     }).then(function(res) {
       Mempool.crawl(res.data, path, hashpool, cb)
     }).catch(function(err) {
-      console.log("BITBUS", err)
+      Log.debug("BITBUS", err)
     })
   })
 }

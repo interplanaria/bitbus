@@ -1,3 +1,4 @@
+const Log = require('./log.js')
 const path = require('path')
 const glob = require('glob')
 const express = require('express')
@@ -19,7 +20,7 @@ module.exports = function(buspath) {
       let str = JSON.stringify(cfig)
       let hash = crypto.createHash('sha256').update(str).digest('hex');
       let hashpath = path.resolve(buspath, "bus/" + hash)
-      console.log("BITBUS", "serving " + str + " from " + hashpath)
+      Log.debug("BITBUS", "serving " + str + " from " + hashpath)
       hashes.push(hash)
     })
     app.get('/', (req, res) => {
@@ -87,11 +88,11 @@ module.exports = function(buspath) {
     })
     const port = (process.env.PORT || 3007)
     app.listen(port, () => {
-      console.log("##########################################################")
-      console.log("#")
-      console.log(`#  Bitbus explorer running at: http://localhost:${port}!`)
-      console.log("#")
-      console.log("##########################################################")
+      Log.debug("##########################################################")
+      Log.debug("#")
+      Log.debug(`#  Bitbus explorer running at: http://localhost:${port}!`)
+      Log.debug("#")
+      Log.debug("##########################################################")
     })
   })
   return app
