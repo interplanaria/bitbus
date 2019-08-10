@@ -1,10 +1,9 @@
 const bsv = require('bsv')
 const config = require('./bitbus.json')
-const seed = config.bitcoin;
 const {Peer, Messages, Inventory} = require('bitcore-p2p-cash')
 const start = function(handler) {
   let m = new Messages({ Block: bsv.Block, BlockHeader: bsv.BlockHeader, Transaction: bsv.Transaction, MerkleBlock: bsv.MerkleBlock })
-  let peer = new Peer({host: seed, messages: m})
+  let peer = new Peer({host: handler.host, messages: m})
   peer.on("disconnect", function() {
     console.log("BITBUS", "peer disconnected. retrying in 10 seconds...")
     setTimeout(function() {

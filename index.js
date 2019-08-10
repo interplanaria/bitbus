@@ -13,6 +13,7 @@ const crypto = require('crypto')
 const express = require('express')
 const bsv = require('bsv')
 const app = express()
+const host = require('./bitbus.json')
 const createKey = function() {
   let privateKey = new bsv.PrivateKey();
   let address = privateKey.toAddress();
@@ -68,18 +69,22 @@ const seek = function(x, cb) {
 }
 var pool = [];
 const mem = function(o, dir) {
-  Net.mempool(o, dir, pool, function() {
+  let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
+  Net.mempool(hb, o, dir, pool, function() {
     console.log("BITBUS", "finished crawling mempool", JSON.stringify(o))
   })
   pool = [];
 }
 const listen = function(o) {
   let str = JSON.stringify(o)
+  let hc = ((o.host && o.host.bitcoin) ? o.host.bitcoin : host.bitcoin);
+  let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
   console.log("BITBUS", "listen - start", str)
   let h = crypto.createHash('sha256').update(str).digest('hex');
   let dir = process.cwd() + "/bus/" + h
   const debouncedMem = debounce(mem, 1000);
   let listener = Listener.start({
+    host: hc,
     onmempool: async function(hash) {
       console.log("BITBUS", "onmempool", hash, Date.now())
       pool.push(hash);
@@ -88,9 +93,9 @@ const listen = function(o) {
     onblock: async function(hash) {
       console.log("BITBUS", "onblock", hash, Date.now())
       let last = await seek(o);
-      Net.mempool(o, dir, null, function() {
+      Net.mempool(hb, o, dir, null, function() {
         console.log("BITBUS", "listen - finished processing mempool", JSON.stringify(o))
-        Net.block(last, dir, function() {
+        Net.block(hb, last, dir, function() {
           console.log("BITBUS", "listen - finished processing block", JSON.stringify(last))
         })
       })
@@ -121,9 +126,10 @@ const crawl = function(o, payload) {
     if (!process.env.DEV && !fs.existsSync(busdir)) fs.mkdirSync(busdir, { recursive: true })
     let dir = busdir + "/" + hash
     console.log("BITBUS", "synchronizing to folder", dir)
-    Net.block(last, dir, function() {
+    let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
+    Net.block(hb, last, dir, function() {
       console.log("BITBUS", "crawl - finished processing block")
-      Net.mempool(o, dir, null, function() {
+      Net.mempool(hb, o, dir, null, function() {
         console.log("BITBUS", "crawl - finished processing mempool", JSON.stringify(o))
         resolve(dir)
       })
@@ -131,7 +137,8 @@ const crawl = function(o, payload) {
   })
 }
 const reset = async function(o) {
-  Net.block(o, function() {
+  let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
+  Net.block(hb, o, function() {
     listen(o)
   })
 }

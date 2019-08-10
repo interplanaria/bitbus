@@ -4,9 +4,7 @@ const Key = require('./key.js')
 const axios = require('axios')
 const fs = require('fs')
 const crypto = require('crypto')
-const config = require('./bitbus.json')
-const host = config.bitbus;
-const peek = function(o) {
+const peek = function(host, o) {
   axios({
     method: "post",
     url: host + "/peek",
@@ -15,7 +13,7 @@ const peek = function(o) {
     console.log("BITBUS", res.data)
   })
 }
-const block = function(o, path, cb) {
+const block = function(host, o, path, cb) {
   if (!process.env.DEV && !fs.existsSync(path)) fs.mkdirSync(path, { recursive: true })
   Key.gen(o).then(function(t) {
     axios({
@@ -34,7 +32,7 @@ const block = function(o, path, cb) {
     })
   })
 }
-const mempool = function(o, path, hashpool, cb) {
+const mempool = function(host, o, path, hashpool, cb) {
   if (!process.env.DEV && !fs.existsSync(path)) fs.mkdirSync(path, { recursive: true })
   Key.gen(o).then(function(t) {
     axios({
