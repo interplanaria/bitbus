@@ -118,9 +118,7 @@ const crawl = function(o, payload) {
     let str = JSON.stringify(o)
     let hash = crypto.createHash('sha256').update(str).digest('hex');
     let busdir = process.cwd() + "/bus"
-    if (!process.env.DEV) {
-      fs.mkdirSync(busdir, { recursive: true })
-    }
+    if (!process.env.DEV && !fs.existsSync(busdir)) fs.mkdirSync(busdir, { recursive: true })
     let dir = busdir + "/" + hash
     console.log("BITBUS", "synchronizing to folder", dir)
     Net.block(last, dir, function() {
