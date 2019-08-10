@@ -13,7 +13,6 @@ const glob = require('glob')
 const fs = require('fs')
 const debounce = require('debounce');
 const crypto = require('crypto')
-const express = require('express')
 const bsv = require('bsv')
 const path = require('path')
 const createKey = function() {
