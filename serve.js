@@ -1,4 +1,5 @@
-module.exports = function() {
+const path = require('path')
+module.exports = function(buspath) {
   const app = express()
   app.use(express.static(__dirname + '/public'))
   app.set('view engine', 'ejs');
@@ -13,11 +14,12 @@ module.exports = function() {
     cfigs.forEach(function(cfig) {
       let str = JSON.stringify(cfig)
       let hash = crypto.createHash('sha256').update(str).digest('hex');
-      console.log("BITBUS", "serving " + str + " from " + process.cwd() + "/bus/" + hash)
+      let hashpath = path.resolve(buspath, "bus/" + hash)
+      console.log("BITBUS", "serving " + str + " from " + hashpath)
       hashes.push(hash)
     })
     app.get('/', (req, res) => {
-      fs.readdir(process.cwd() + "/bus", function(err, items) {
+      fs.readdir(path.resolve(buspath, "bus"), function(err, items) {
         let url = req.originalUrl;
         res.render("home", {
           items: cfigs.map(function(c, index) {
@@ -30,7 +32,8 @@ module.exports = function() {
       })
     })
     app.get('/bus/:hash', (req, res) => {
-      fs.readdir(process.cwd() + "/bus/" + req.params.hash, function(err, items) {
+      let hashpath = path.resolve(buspath, "bus/" + req.params.hash)
+      fs.readdir(hashpath, function(err, items) {
         let url = req.originalUrl;
         if (items) {
           res.render("show", {
@@ -48,7 +51,8 @@ module.exports = function() {
       })
     })
     app.get('/bus/:hash/:filename', (req, res) => {
-      let filestream = fs.readFile(process.cwd() + "/bus/" + req.params.hash + "/" + req.params.filename, function(err, r) {
+      let filepath = path.resolve(buspath, "bus/" + req.params.hash + "/" + req.params.filename)
+      let filestream = fs.readFile(filepath, function(err, r) {
         let url = "/b/" + req.params.hash + "/" + req.params.filename;
         res.render("block", {
           val: url,
@@ -57,14 +61,16 @@ module.exports = function() {
       })
     })
     app.get('/b/:hash/:filename', (req, res) => {
-      let filestream = fs.createReadStream(process.cwd() + "/bus/" + req.params.hash + "/" + req.params.filename)
+      let filepath = path.resolve(buspath, "bus/" + req.params.hash + "/" + req.params.filename)
+      let filestream = fs.createReadStream(filepath)
       filestream.on("error", function(e) {
         res.send("")
       });
       filestream.pipe(res)
     })
     app.get('/b/:hash', (req, res) => {
-      fs.readdir(process.cwd() + "/bus/" + req.params.hash, function(err, items) {
+      let hashpath = path.resolve(buspath, "bus/" + req.params.hash)
+      fs.readdir(hashpath, function(err, items) {
         let url = req.originalUrl;
         res.json({
           items: items.map(function(i) {

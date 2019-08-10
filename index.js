@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('dotenv').config()
 const Net = require('./net.js')
 const qr = require('./qr')
 const Listener = require('./listener')
@@ -14,19 +15,23 @@ const debounce = require('debounce');
 const crypto = require('crypto')
 const express = require('express')
 const bsv = require('bsv')
+const path = require('path')
 const createKey = function() {
   let privateKey = new bsv.PrivateKey();
   let address = privateKey.toAddress();
   let pubKey = privateKey.toPublicKey();
   return {privateKey: privateKey.toWIF(), address: address.toString(), publicKey: pubKey.toString()}
 }
-const init = function() {
+const init = function(o) {
   return new Promise(function(resolve, reject) {
     let keys = createKey()
+    keys.PORT = 3007;
+    for(let k in o) {
+      keys[k] = o[k];
+    }
     let kp = Object.keys(keys).map(function(k) {
       return k + "=" + keys[k]
     }).join("\n")
-    kp += "\nPORT=3007"
     if (fs.existsSync(process.cwd() + "/.env")) {
       console.log("BITBUS", "bitbus .env already exists. Skipping...")
       resolve();
@@ -35,18 +40,26 @@ const init = function() {
         process.env[k] = keys[k];
       }
       fs.writeFile(process.cwd() + "/.env", kp, function(err, res) {
+        let busdir = path.resolve(buspath(), "bus")
+        if (!process.env.DEV && !fs.existsSync(busdir)) {
+          fs.mkdirSync(busdir, { recursive: true })
+          console.log("BITBUS", "successfully created a bus storage at " + busdir)
+        }
         whoami(keys.address, resolve)
       })
     }
   })
 }
 var listeners = [];
+const buspath = function() {
+  return (process.env.BUS_PATH ? process.env.BUS_PATH : process.cwd());
+}
 // Find the last tip
 const seek = function(x, cb) {
   let o = deepcopy(x)
   let str = JSON.stringify(x)
   let hash = crypto.createHash('sha256').update(str).digest('hex');
-  let dir = process.cwd() + "/bus/" + hash
+  let dir = path.resolve(buspath(), "bus/" + hash)
   return new Promise(function(resolve, reject) {
     fs.readdir(dir, function(err, items) {
       if (items && items.length > 0) {
@@ -81,7 +94,7 @@ const listen = function(o) {
   let hb = ((o.host && o.host.bitbus) ? o.host.bitbus : host.bitbus);
   console.log("BITBUS", "listen - start", str)
   let h = crypto.createHash('sha256').update(str).digest('hex');
-  let dir = process.cwd() + "/bus/" + h
+  let dir = path.resolve(buspath(), "bus/" + h)
   const debouncedMem = debounce(mem, 1000);
   let listener = Listener.start({
     host: hc,
@@ -122,7 +135,7 @@ const crawl = function(o, payload) {
     }
     let str = JSON.stringify(o)
     let hash = crypto.createHash('sha256').update(str).digest('hex');
-    let busdir = process.cwd() + "/bus"
+    let busdir = path.resolve(buspath(), "bus")
     if (!process.env.DEV && !fs.existsSync(busdir)) fs.mkdirSync(busdir, { recursive: true })
     let dir = busdir + "/" + hash
     console.log("BITBUS", "synchronizing to folder", dir)
@@ -229,9 +242,14 @@ if (process.argv.length > 2) {
   } else if (cmd === 'start') {
     start();
   } else if (cmd === 'new') {
-    init();
+    if (process.argv.length > 3) {
+      let p = path.resolve(".", process.argv[3])
+      init({"BUS_PATH": p})
+    } else {
+      init();
+    }
   } else if (cmd === 'serve') {
-    app = Serve();
+    app = Serve(buspath());
   } else if (cmd === 'whoami') {
     whoami(process.env.address)
   } else if (cmd === 'publish') {

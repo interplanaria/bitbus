@@ -1,4 +1,3 @@
-require('dotenv').config()
 const SERVICE = "1LX2igqryqm9zMLaFKFS5Uy4PQ7NYEqQw6"
 const datapay = require('datapay')
 const gen = function(o) {
