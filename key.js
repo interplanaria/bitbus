@@ -6,7 +6,6 @@ const gen = function(o) {
     if (process.env.publicKey) {
       datapay.build({
         data: [SERVICE, JSON.stringify(o.q), process.env.publicKey],
-//        pay: { key: process.env.privateKey, to: [{ address: SERVICE, value: 0 }] }
       }, function(err, tx) {
         if (err) {
           console.log("BITBUS", err)

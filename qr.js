@@ -15,7 +15,7 @@ module.exports = function(address, done) {
 #################################################################################\n\n`;
     qrcode.generate("bitcoin:"+address, function(code) {
       message += code;
-      datapay.connect('https://bchsvexplorer.com').address(address, function(err, info) {
+      datapay.connect().address(address, function(err, info) {
         if (err) {
           done(err, null)
         } else {
