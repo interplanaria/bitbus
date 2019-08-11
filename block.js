@@ -6,11 +6,22 @@ const writetape = function(current_block, path) {
   let l = "BLOCK " + current_block + " " + Date.now() + "\n"
   fs.appendFileSync(path + "/tape.txt", l);
 }
-const crawl = function(stream, path, cb) {
+const crawl = function(stream, o, path, cb) {
   let str = stream
     .pipe(es.split())
     .pipe(es.filterSync(function(data) { return !(["[", ",", "]"].includes(data.toString())) }))
     .pipe(es.parse())
+  if (o.l && o.l.map) {
+    str = str.pipe(es.map(function(data, callback) {
+      let parsed = o.l.map(data)
+      let e = {
+        m: parsed,
+        tx: data.tx,
+        blk: data.blk
+      }
+      callback(null, e)
+    }))
+  }
   let current_block;
   let fileStream
   str.on('data', function(data) {

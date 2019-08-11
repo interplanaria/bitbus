@@ -27,7 +27,7 @@ const block = function(host, o, path, cb) {
       data: { tx: t },
       responseType: "stream"
     }).then(function(res) {
-      Block.crawl(res.data, path, cb)
+      Block.crawl(res.data, o, path, cb)
     }).catch(function(err) {
       Log.debug("BITBUS", err)
     })
@@ -42,7 +42,7 @@ const mempool = function(host, o, path, hashpool, cb) {
       data: { tx: t },
       responseType: "stream"
     }).then(function(res) {
-      Mempool.crawl(res.data, path, hashpool, cb)
+      Mempool.crawl(res.data, o, path, hashpool, cb)
     }).catch(function(err) {
       Log.debug("BITBUS", err)
     })

@@ -1,9 +1,23 @@
 const Log = require('./log.js')
 const fs = require('fs')
 const es = require('event-stream')
-const crawl = function(stream, path, hashpool, cb) {
+const JSONStream = require('JSONStream')
+const crawl = function(stream, o, path, hashpool, cb) {
   let fileStream = fs.createWriteStream(path + "/mempool.json")
-  let str = stream.pipe(fileStream)
+  let str = stream;
+  if (o.l && o.l.map) {
+    str = str.pipe(JSONStream.parse("*"))
+    .pipe(es.map(function(data, callback) {
+      let parsed = o.l.map(data)
+      let e = {
+        m: parsed,
+        tx: data.tx
+      }
+      callback(null, e)
+    }))
+    .pipe(JSONStream.stringify("[\n", ",\n", "]"))
+  }
+  str = str.pipe(fileStream)
   str.on('close', function() {
     if (!process.env.DEV) {
       Log.debug("BITBUS", "mempool crawl finished")

@@ -9,7 +9,7 @@ module.exports = function(buspath) {
   app.use(express.static(__dirname + '/public'))
   app.set('view engine', 'ejs');
   app.set('views', __dirname + '/views')
-  glob(process.cwd() + "/*.json", async function(er, files) {
+  glob(process.cwd() + "/*.@(js|json)", async function(er, files) {
     let cfigs = files.map(function(f) {
       return require(f)
     }).filter(function(f) {

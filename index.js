@@ -182,7 +182,7 @@ const validate = function(config, vmode) {
   return errors;
 }
 const start = function(options, cb) {
-  glob(process.cwd() + "/*.json", async function(er, files) {
+  glob(process.cwd() + "/*.@(js|json)", async function(er, files) {
     let configs = files.map(function(f) {
       return require(f)
     }).filter(function(f) {
