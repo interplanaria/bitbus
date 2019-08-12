@@ -10,7 +10,7 @@ const crawl = function(stream, o, path, hashpool, cb) {
     .pipe(es.map(function(data, callback) {
       let parsed = o.l.map(data)
       let e = {
-        m: parsed,
+        $: parsed,
         tx: data.tx
       }
       callback(null, e)
