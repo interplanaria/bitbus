@@ -1,7 +1,7 @@
 ports:
 - port: 3007
 tasks:
-- command: mkdir twetch
-- command: cd twetch
+- command: mkdir /workspace/bitbus/twetch
+- command: cd /workspace/bitbus/twetch
 - command: node ../index start
 - command: node ../index serve
