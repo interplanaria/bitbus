@@ -1,0 +1,8 @@
+ports:
+- port: 3007
+tasks:
+- command: init
+    mkdir twetch \
+    & cd twetch \
+    & node ../index start \
+    & node ../index serve \
