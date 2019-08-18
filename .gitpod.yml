@@ -3,5 +3,6 @@ ports:
 tasks:
 - command: mkdir /workspace/bitbus/twetch
 - command: cd /workspace/bitbus/twetch
-- command: node ../index start
-- command: node ../index serve
+- command: cd /workspace/bitbus
+- command: node index start /workspace/bitbus/twetch/twetchbus.json
+- command: node index serve /workspace/bitbus/twetch/twetchbus.json
