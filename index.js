@@ -182,7 +182,11 @@ const validate = function(config, vmode) {
   return errors;
 }
 const start = function(options, cb) {
+<<<<<<< HEAD
+  glob(process.cwd() + "/twetch.json", async function(er, files) {
+=======
   glob(process.cwd() + "/*@(js|json)", async function(er, files) {
+>>>>>>> 8bc1b1f134a091492ab0d456cd2b397d60090ee1
     let configs = files.map(function(f) {
       return require(f)
     }).filter(function(f) {
