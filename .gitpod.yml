@@ -1,10 +1,12 @@
 ports:
 - port: 3007
 tasks:
-- command: npm update
-- command: npm audit fix
-- command: mkdir /workspace/bitbus/twetch
-- command: cd /workspace/bitbus/twetch
-- command: cd /workspace/bitbus
-- command: node index start /workspace/bitbus/twetch/twetchbus.json
-- command: node index serve /workspace/bitbus/twetch/twetchbus.json
+- command: npm update /
+    & npm audit fix /
+    & mkdir /workspace/bitbus/twetch /
+    & cd /workspace/bitbus/twetch /
+    & cd /workspace/bitbus /
+    & node index new /
+    & node index init /
+    & node index start /workspace/bitbus/twetch.json
+- command: node index serve /workspace/bitbus/twetch.json

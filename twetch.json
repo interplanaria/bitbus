@@ -1,0 +1,18 @@
+{
+  "bitbus": "1",
+  "name": "timememe",
+  "host": {
+    "bitbus": "https://demo.bitbus.network"
+  },
+  "from": 590000,
+  "q": {
+      "find": {
+      "out.s1":"19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut",
+      "out.s24":"twetch"
+    },
+    "project": {
+        "out.s2":1,
+        "out.s3":1
+    }
+  }
+}

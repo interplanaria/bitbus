@@ -72,7 +72,7 @@ const seek = function(x, cb) {
         }
         let modified = o;
         if (max && max > 0) {
-          modified.q.find["blk.i"] = { $gte: max }    
+          modified.q.find["blk.i"] = { $gte: max }
         }
         resolve(modified)
       } else {
@@ -127,7 +127,7 @@ const crawl = function(o, payload) {
           let gte = Math.max(o.from, payload.data)
           last.q.find["blk.i"] = { $gte: gte };
         }
-      } 
+      }
     } else {
       last = await seek(last);
     }
@@ -165,7 +165,7 @@ const validate = function(config, vmode) {
     errors.push("requires a \"name\" attribute")
   }
   if (config.q) {
-    let keys = Object.keys(config.q) 
+    let keys = Object.keys(config.q)
     if (keys.length > 0) {
       // keys must be either 'find' or 'project'
       keys.forEach(function(key) {
@@ -182,7 +182,7 @@ const validate = function(config, vmode) {
   return errors;
 }
 const start = function(options, cb) {
-  glob(process.cwd() + "/*.@(js|json)", async function(er, files) {
+  glob(process.cwd() + "/*@(js|json)", async function(er, files) {
     let configs = files.map(function(f) {
       return require(f)
     }).filter(function(f) {

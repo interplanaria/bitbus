@@ -1,4 +1,4 @@
 node_modules
-twetch/bus
+bus
 package-lock.json
 .env
