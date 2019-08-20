@@ -1,21 +1,20 @@
 const Block = require('./block.js')
 const Mempool = require('./mempool.js')
 const Key = require('./key.js')
+const Log = require('./log.js')
 const axios = require('axios')
 const fs = require('fs')
 const crypto = require('crypto')
-const config = require('./bitbus.json')
-const host = config.bitbus;
-const peek = function(o) {
+const peek = function(host, o) {
   axios({
     method: "post",
     url: host + "/peek",
     data: { q: o.q },
   }).then(function(res) {
-    console.log("BITBUS", res.data)
+    Log.debug("BITBUS", res.data)
   })
 }
-const block = function(o, path, cb) {
+const block = function(host, o, path, cb) {
   if (!process.env.DEV && !fs.existsSync(path)) fs.mkdirSync(path, { recursive: true })
   Key.gen(o).then(function(t) {
     axios({
@@ -28,13 +27,13 @@ const block = function(o, path, cb) {
       data: { tx: t },
       responseType: "stream"
     }).then(function(res) {
-      Block.crawl(res.data, path, cb)
+      Block.crawl(res.data, o, path, cb)
     }).catch(function(err) {
-      console.log("BITBUS", err)
+      Log.debug("BITBUS", err)
     })
   })
 }
-const mempool = function(o, path, hashpool, cb) {
+const mempool = function(host, o, path, hashpool, cb) {
   if (!process.env.DEV && !fs.existsSync(path)) fs.mkdirSync(path, { recursive: true })
   Key.gen(o).then(function(t) {
     axios({
@@ -43,9 +42,9 @@ const mempool = function(o, path, hashpool, cb) {
       data: { tx: t },
       responseType: "stream"
     }).then(function(res) {
-      Mempool.crawl(res.data, path, hashpool, cb)
+      Mempool.crawl(res.data, o, path, hashpool, cb)
     }).catch(function(err) {
-      console.log("BITBUS", err)
+      Log.debug("BITBUS", err)
     })
   })
 }
