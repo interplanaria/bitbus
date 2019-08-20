@@ -53,7 +53,7 @@ const init = function(o) {
 }
 var listeners = [];
 const buspath = function() {
-  return (process.env.BUS_PATH ? process.env.BUS_PATH : process.cwd());
+  return (process.env.BUS_PATH ? path.resolve(".", process.env.BUS_PATH) : process.cwd());
 }
 // Find the last tip
 const seek = function(x, cb) {
@@ -231,7 +231,7 @@ const whoami = function(addr, cb) {
   })
 }
 var app;
-if (process.argv.length > 2) {
+if (require.main === module && process.argv.length > 2) {
   let cmd = process.argv[2].toLowerCase();
   if (cmd === 'rewind') {
     if (process.argv.length > 3) {
