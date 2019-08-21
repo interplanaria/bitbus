@@ -72,7 +72,7 @@ const seek = function(x, cb) {
         }
         let modified = o;
         if (max && max > 0) {
-          modified.q.find["blk.i"] = { $gte: max }    
+          modified.q.find["blk.i"] = { $gt: max }    
         }
         resolve(modified)
       } else {
