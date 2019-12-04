@@ -12,7 +12,7 @@ const {Inventory} = require('bitcore-p2p-cash')
 const deepcopy = require('deepcopy');
 const glob = require('glob')
 const fs = require('fs')
-const debounce = require('debounce');
+const pThrottle = require('p-throttle');
 const crypto = require('crypto')
 const bsv = require('bsv')
 const path = require('path')
@@ -96,13 +96,13 @@ const listen = function(o) {
   Log.debug("BITBUS", "listen - start", str)
   let h = crypto.createHash('sha256').update(str).digest('hex');
   let dir = path.resolve(buspath(), "bus/" + h)
-  const debouncedMem = debounce(mem, 1000);
+  const throttledMem = pThrottle(mem, 1, 2000)
   let listener = Listener.start({
     host: hc,
     onmempool: async function(hash) {
       Log.debug("BITBUS", "onmempool", hash, Date.now())
       pool.push(hash);
-      debouncedMem(o, dir)
+      throttledMem(o, dir)
     },
     onblock: async function(hash) {
       Log.debug("BITBUS", "onblock", hash, Date.now())
