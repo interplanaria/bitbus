@@ -1,7 +1,7 @@
 const Log = require("./log.js")
 const bsv = require('bsv')
 const config = require('./bitbus.json')
-const {Peer, Messages, Inventory} = require('bitcore-p2p-cash')
+const {Peer, Messages, Inventory} = require('b2p2p')
 const start = function(handler) {
   let m = new Messages({ Block: bsv.Block, BlockHeader: bsv.BlockHeader, Transaction: bsv.Transaction, MerkleBlock: bsv.MerkleBlock })
   let peer = new Peer({host: handler.host, messages: m})

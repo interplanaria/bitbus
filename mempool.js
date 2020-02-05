@@ -7,6 +7,9 @@ const crawl = function(stream, o, path, hashpool, cb) {
   let str = stream;
   if (o.l && o.l.map) {
     str = str.pipe(JSONStream.parse("*"))
+    .on("error", (e) => {
+      console.log("* error:", e)
+    })
     .pipe(es.map(function(data, callback) {
       let parsed = o.l.map(data)
       let e = {
